@@ -33,3 +33,46 @@ def run_research_pipeline(topic : str) -> dict:
             f"Search Results:\n{state['search_results'][:800]}"
         )]
     })
+
+
+    state["scraped_content"] = reader_result['messages'][-1].content
+    print("\nScraped Content:\n", state['scraped_content'])
+
+
+
+    #Writer chain working
+    print("\n"+" ="*50)
+    print("step 3 - Writer is drafting the report ...")
+    print("="*50)
+
+    research_combined = (
+        f"SEARCH RESULTS:\n{state['search_results']}\n\n"
+        f"DETAILED CONTENT:\n{state['scraped_content']}"
+    )
+
+    state["report"] = writer_chain.invoke({
+        "topic": topic,
+        "research": research_combined
+    })
+
+    print("\nFinal Report:\n", state['report'])
+
+
+
+    #critic report
+
+    print("\n"+" ="*50)
+    print("step 4 - critic is reviewing the report ")
+    print("="*50)
+
+    state["feedback"] = critic_chain.invoke({
+        "report": state['report']
+    })
+    print("\nCritic Report:\n", state['feedback'])
+
+    return state
+
+
+if __name__ == "__main__":
+    topic = input("\n Enter a topic to research: ")
+    run_research_pipeline(topic)
